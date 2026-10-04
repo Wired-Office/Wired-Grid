@@ -1,0 +1,95 @@
+# Builds Wired Grid for Windows (.exe installer) and Linux (AppImage, .deb)
+# from cross-platform/ and attaches the installers to a GitHub release.
+#
+# Run it from the Actions tab (or `gh workflow run windows-linux.yml -f tag=v1.0`)
+# after creating the release; the macOS .dmg is built separately with
+# Scripts/make-dmg.sh. Pull requests and pushes only build and test.
+name: Windows & Linux
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the installers to (e.g. v1.0)"
+        required: true
+  pull_request:
+    paths: ["cross-platform/**", ".github/workflows/windows-linux.yml"]
+  push:
+    branches: [main]
+    paths: ["cross-platform/**", ".github/workflows/windows-linux.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            bundles: nsis
+          - os: ubuntu-22.04
+            bundles: appimage,deb
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: cross-platform
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libfuse2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cross-platform/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cross-platform/src-tauri -> target
+
+      - run: npm ci
+      - run: npm test
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Build installers
+        run: npx tauri build --bundles ${{ matrix.bundles }}
+
+      - name: Collect installers
+        id: collect
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version.replace(/\.0$/, '')")
+          out="$RUNNER_TEMP/installers"
+          mkdir -p "$out"
+          bundle=src-tauri/target/release/bundle
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cp "$bundle"/nsis/*.exe "$out/Wired-Grid-$version-windows-x64-setup.exe"
+          else
+            cp "$bundle"/appimage/*.AppImage "$out/Wired-Grid-$version-linux-x86_64.AppImage"
+            cp "$bundle"/deb/*.deb "$out/Wired-Grid-$version-linux-amd64.deb"
+          fi
+          ls -la "$out"
+          echo "dir=$out" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ runner.os }}
+          path: ${{ steps.collect.outputs.dir }}
+
+      - name: Attach to release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.inputs.tag }}" "${{ steps.collect.outputs.dir }}"/* --clobber --repo "$GITHUB_REPOSITORY"

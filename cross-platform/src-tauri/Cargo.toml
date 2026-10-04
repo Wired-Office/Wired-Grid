@@ -1,0 +1,28 @@
+[package]
+name = "wired-grid"
+version = "1.0.0"
+description = "Wired Grid for Windows and Linux"
+authors = ["Wired Office"]
+license = "MIT"
+repository = "https://github.com/Wired-Office/Wired-Grid"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "wired_grid_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

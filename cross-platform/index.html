@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wired Grid</title>
+  </head>
+  <body>
+    <div id="app">
+      <nav id="menubar" role="menubar" aria-label="Menu"></nav>
+      <div id="ribbon" role="toolbar" aria-label="Ribbon"></div>
+      <div id="formula-bar"></div>
+      <div id="findbar" hidden>
+        <input id="find-input" type="search" placeholder="Find" aria-label="Find" spellcheck="false" />
+        <span id="find-count" aria-live="polite"></span>
+        <button data-find="prev" title="Previous (Shift+Enter)" aria-label="Previous match">‹</button>
+        <button data-find="next" title="Next (Enter)" aria-label="Next match">›</button>
+        <label class="check"><input id="find-case" type="checkbox" /> Match case</label>
+        <label class="check"><input id="find-whole" type="checkbox" /> Entire cell</label>
+        <label class="check"><input id="find-workbook" type="checkbox" /> All sheets</label>
+        <span class="find-replace">
+          <input id="replace-input" type="text" placeholder="Replace with" aria-label="Replace with" spellcheck="false" />
+          <button data-find="replace">Replace</button>
+          <button data-find="replace-all">Replace All</button>
+        </span>
+        <button data-find="close" class="close" title="Close (Esc)" aria-label="Close find bar">×</button>
+      </div>
+      <div id="banner" hidden role="status"></div>
+      <main id="grid"></main>
+      <div id="sheet-tabs"></div>
+      <footer id="statusbar"></footer>
+    </div>
+    <div id="print-root" aria-hidden="true"></div>
+    <dialog id="dialog"></dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
