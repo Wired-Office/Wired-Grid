@@ -1,6 +1,6 @@
 [package]
 name = "wired-grid"
-version = "1.0.0"
+version = "1.0.1"
 description = "Wired Grid for Windows and Linux"
 authors = ["Wired Office"]
 license = "MIT"
