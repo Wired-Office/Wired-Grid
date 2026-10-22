@@ -31,7 +31,7 @@ xcodebuild -project WiredGrid.xcodeproj -scheme WiredGrid build
 xcodebuild -project WiredGrid.xcodeproj -scheme WiredGrid test
 ```
 
-The project uses file-system-synchronized groups, so new source files placed under `WiredGrid/` are picked up automatically. Regenerate the app icon with `swift Scripts/generate-icon.swift`.
+The project uses file-system-synchronized groups, so new source files placed under `WiredGrid/` are picked up automatically. Regenerate the app icon (light and dark variants) with `swift Scripts/generate-icon.swift`.
 
 ## Building the Windows and Linux app
 
