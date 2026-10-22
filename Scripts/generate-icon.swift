@@ -5,7 +5,8 @@
 // Design (matches LBrowser and Wired Paper): a white squircle, a dot-matrix
 // spreadsheet — darker header row and gridlines, softly lit cells — and a
 // single green dot. A dark variant (charcoal squircle, light dots) is written
-// alongside for macOS's dark icon appearance.
+// alongside for macOS's dark icon appearance, and as an image set
+// (AppIconDark) that the app shows in the Dock in Dark Mode.
 
 import AppKit
 
@@ -91,4 +92,17 @@ for entry in entries {
 }
 let contents: [String: Any] = ["images": images, "info": ["author": "xcode", "version": 1]]
 try JSONSerialization.data(withJSONObject: contents, options: [.prettyPrinted, .sortedKeys]).write(to: outputDirectory.appendingPathComponent("Contents.json"))
-print("Wrote \(entries.count * 2) icon images to \(outputDirectory.path)")
+
+// The dark icon as a plain image, for switching the Dock icon at run time
+// (AppIconAppearance); macOS ignores dark appearances in an .appiconset.
+let darkImageSet = outputDirectory.deletingLastPathComponent().appendingPathComponent("AppIconDark.imageset")
+try FileManager.default.createDirectory(at: darkImageSet, withIntermediateDirectories: true)
+var darkImages: [[String: String]] = []
+for scale in [1, 2] {
+    let name = "icon_dark_512x512\(scale == 2 ? "@2x" : "").png"
+    try renderPNG(pixels: 512 * scale, appearance: dark).write(to: darkImageSet.appendingPathComponent(name))
+    darkImages.append(["filename": name, "idiom": "mac", "scale": "\(scale)x"])
+}
+try JSONSerialization.data(withJSONObject: ["images": darkImages, "info": ["author": "xcode", "version": 1]] as [String: Any],
+                           options: [.prettyPrinted, .sortedKeys]).write(to: darkImageSet.appendingPathComponent("Contents.json"))
+print("Wrote \(entries.count * 2) icon images to \(outputDirectory.path) and the dark Dock icon to \(darkImageSet.path)")

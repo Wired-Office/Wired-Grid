@@ -3,6 +3,7 @@ import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let recentDocumentsMenu = RecentDocumentsMenuController()
+    private let iconAppearance = AppIconAppearance()
     private var referenceWindow: NSWindow?
 
     /// True when the app is hosting unit tests: stay in the background and open no windows.
@@ -16,6 +17,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.mainMenu = MainMenuBuilder.build(recentDocumentsDelegate: recentDocumentsMenu)
         NSWindow.allowsAutomaticWindowTabbing = true
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        iconAppearance.start()
     }
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
